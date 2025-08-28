@@ -4,15 +4,46 @@ const router = express.Router();
 
 // Get all bills
 router.get('/', async (req, res) => {
-  const bills = await Bill.find().sort({ date: -1 });
-  res.json(bills);
+  try {
+    const bills = await Bill.find().sort({ date: -1 });
+    res.json(bills);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // Add a bill
 router.post('/', async (req, res) => {
-  const bill = new Bill(req.body);
-  await bill.save();
-  res.status(201).json(bill);
+  try {
+    const {
+      customerName,
+      items,
+      subtotal,
+      discount = 0,
+      deliveryCharges = 0,
+      total,
+      outstanding = 0,
+      grandTotal,
+      date
+    } = req.body;
+
+    const bill = new Bill({
+      customerName,
+      items,
+      subtotal,
+      discount,
+      deliveryCharges,
+      total,
+      outstanding,
+      grandTotal,
+      date: date || Date.now()
+    });
+
+    await bill.save();
+    res.status(201).json(bill);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
 // Delete a bill

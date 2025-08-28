@@ -10,8 +10,12 @@ const billItemSchema = new mongoose.Schema({
 const billSchema = new mongoose.Schema({
   customerName: String,
   items: [billItemSchema],
-  discount: { type: Number, default: 0 }, 
-  total: Number,
+  subtotal: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
+  deliveryCharges: { type: Number, default: 0 },
+  total: { type: Number, default: 0 }, // after discount + delivery
+  outstanding: { type: Number, default: 0 },
+  grandTotal: { type: Number, default: 0 }, // total + outstanding
   date: { type: Date, default: Date.now },
 });
 

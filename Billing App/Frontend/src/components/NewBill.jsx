@@ -10,6 +10,8 @@ function NewBill() {
   const [customerName, setCustomerName] = useState('');
   const [items, setItems] = useState([{ productId: '', quantity: '' }]);
   const [discount, setDiscount] = useState('');
+  const [deliveryCharges, setDeliveryCharges] = useState('');
+  const [outstanding, setOutstanding] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:5000/api/products')
@@ -40,13 +42,19 @@ function NewBill() {
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() - (parseFloat(discount) || 0);
+    const subtotal = calculateSubtotal();
+    const discountValue = parseFloat(discount) || 0;
+    const deliveryValue = parseFloat(deliveryCharges) || 0;
+    return subtotal - discountValue + deliveryValue;
   };
 
   const handleSave = async () => {
     const discountValue = parseFloat(discount) || 0;
-    if (discountValue < 0) {
-      alert('Discount cannot be negative');
+    const deliveryValue = parseFloat(deliveryCharges) || 0;
+    const outstandingValue = parseFloat(outstanding) || 0;
+
+    if (discountValue < 0 || deliveryValue < 0 || outstandingValue < 0) {
+      alert('Discount, Delivery Charges and Outstanding cannot be negative');
       return;
     }
 
@@ -55,19 +63,23 @@ function NewBill() {
       return {
         ...item,
         price: product ? product.price : 0,
-        name: product ? product.name : 'Unknown' // Add product name for schema
+        name: product ? product.name : 'Unknown'
       };
     });
 
     const billData = {
       customerName,
       items: itemsWithPrice,
+      subtotal: calculateSubtotal(),
       discount: discountValue,
+      deliveryCharges: deliveryValue,
       total: calculateTotal(),
+      outstanding: outstandingValue,
+      grandTotal: calculateTotal() + outstandingValue,
       date: new Date().toISOString(),
     };
 
-    console.log('Saving bill:', billData); // Debug bill data
+    console.log('Saving bill:', billData);
 
     try {
       const response = await fetch('http://localhost:5000/api/bills', {
@@ -76,13 +88,16 @@ function NewBill() {
         body: JSON.stringify(billData)
       });
       const savedBill = await response.json();
-      console.log('API response:', savedBill); // Debug API response
+      console.log('API response:', savedBill);
 
-      dispatch(addBill(savedBill)); // Dispatch to Redux
+      dispatch(addBill(savedBill));
+
       // Reset form
       setCustomerName('');
       setItems([{ productId: '', quantity: '' }]);
       setDiscount('');
+      setDeliveryCharges('');
+      setOutstanding('');
     } catch (error) {
       console.error('Error saving bill:', error);
     }
@@ -142,6 +157,10 @@ function NewBill() {
             </div>
           </div>
         ))}
+        {/* Add Item Button */}
+        <button className="btn btn-outline-success mb-3" onClick={addItem}>
+          <FaPlus /> Add Item
+        </button>
 
         {/* Discount Field */}
         <div className="mb-4">
@@ -157,16 +176,46 @@ function NewBill() {
           />
         </div>
 
-        {/* Add Item Button */}
-        <button className="btn btn-outline-success mb-3" onClick={addItem}>
-          <FaPlus /> Add Item
-        </button>
+        {/* Delivery Charges Field */}
+        <div className="mb-4">
+          <label className="form-label fw-bold">Delivery Charges (₹)</label>
+          <input
+            type="number"
+            step="0.01"
+            className="form-control"
+            placeholder="Enter delivery charges"
+            value={deliveryCharges}
+            min="0"
+            onChange={e => setDeliveryCharges(e.target.value)}
+          />
+        </div>
 
-        {/* Total & Save */}
+        {/* Outstanding Balance Field */}
+        <div className="mb-4">
+          <label className="form-label fw-bold">Outstanding Balance (₹)</label>
+          <input
+            type="number"
+            step="0.01"
+            className="form-control"
+            placeholder="Enter outstanding balance"
+            value={outstanding}
+            min="0"
+            onChange={e => setOutstanding(e.target.value)}
+          />
+        </div>
+
+        
+
+        {/* Totals */}
         <div className="text-end">
           <h5>Subtotal: ₹{calculateSubtotal().toFixed(2)}</h5>
           <h5>Discount: ₹{(parseFloat(discount) || 0).toFixed(2)}</h5>
-          <h5>Total: ₹{calculateTotal().toFixed(2)}</h5>
+          <h5>Delivery Charges: ₹{(parseFloat(deliveryCharges) || 0).toFixed(2)}</h5>
+          <h5>Total (After Discount & Delivery): ₹{calculateTotal().toFixed(2)}</h5>
+          <h5>Outstanding Balance: ₹{(parseFloat(outstanding) || 0).toFixed(2)}</h5>
+          <h4 className="fw-bold text-success">
+            Grand Total: ₹{(calculateTotal() + (parseFloat(outstanding) || 0)).toFixed(2)}
+          </h4>
           <button className="btn btn-success mt-3" onClick={handleSave}>
             Save Bill
           </button>

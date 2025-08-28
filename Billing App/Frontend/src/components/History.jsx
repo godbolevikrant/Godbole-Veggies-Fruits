@@ -18,20 +18,20 @@ function History() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch('http://localhost:5000/api/bills').then(res => {
-        if (!res.ok) throw new Error('Failed to fetch bills');
+      fetch("http://localhost:5000/api/bills").then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch bills");
         return res.json();
       }),
-      fetch('http://localhost:5000/api/products').then(res => {
-        if (!res.ok) throw new Error('Failed to fetch products');
+      fetch("http://localhost:5000/api/products").then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch products");
         return res.json();
-      })
+      }),
     ])
       .then(([billsData, productsData]) => {
         setBills(billsData);
         setProducts(productsData);
       })
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -44,7 +44,11 @@ function History() {
         if (!input) throw new Error("Bill content not found");
         const canvas = await html2canvas(input, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "px",
+          format: "a4",
+        });
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
@@ -60,7 +64,7 @@ function History() {
   // Handle printing
   const handlePrint = useReactToPrint({
     content: () => downloadRef.current,
-    documentTitle: `Bill-${billToDownload?._id || billToDownload?.id || 'unknown'}`,
+    documentTitle: `Bill-${billToDownload?._id || billToDownload?.id || "unknown"}`,
     onAfterPrint: () => setBillToDownload(null),
   });
 
@@ -70,10 +74,10 @@ function History() {
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:5000/api/bills/${billId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      if (!response.ok) throw new Error('Failed to delete bill');
-      setBills(bills.filter(bill => (bill._id || bill.id) !== billId));
+      if (!response.ok) throw new Error("Failed to delete bill");
+      setBills(bills.filter((bill) => (bill._id || bill.id) !== billId));
     } catch (err) {
       alert("Failed to delete bill. Please try again.\n" + err.message);
     } finally {
@@ -88,11 +92,7 @@ function History() {
       const customer = bill.customerName ? bill.customerName.toLowerCase() : "";
       const id = String(bill._id || bill.id);
       const date = new Date(bill.date).toLocaleString().toLowerCase();
-      return (
-        customer.includes(query) ||
-        id.includes(query) ||
-        date.includes(query)
-      );
+      return customer.includes(query) || id.includes(query) || date.includes(query);
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -105,7 +105,7 @@ function History() {
           className="form-control w-50"
           placeholder="Search by customer, bill ID, or date..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       <div className="card shadow">
@@ -127,7 +127,9 @@ function History() {
                       <strong>Bill #{bill._id || bill.id}</strong> -{" "}
                       {new Date(bill.date).toLocaleString()}
                     </div>
-                    <span className="fw-bold">₹{bill.total.toFixed(2)}</span>
+                    <span className="fw-bold text-success">
+                      ₹{(bill.grandTotal ?? bill.total).toFixed(2)}
+                    </span>
                   </div>
 
                   {/* Customer Name */}
@@ -137,16 +139,26 @@ function History() {
                     </div>
                   )}
 
+                  {/* Financial Breakdown */}
+                  <div className="mt-1">
+                    <small>
+                      Subtotal: ₹{(bill.subtotal || 0).toFixed(2)} | Discount: ₹
+                      {(bill.discount || 0).toFixed(2)} | Delivery: ₹
+                      {(bill.deliveryCharges || 0).toFixed(2)} | Outstanding: ₹
+                      {(bill.outstanding || 0).toFixed(2)}
+                    </small>
+                  </div>
+
                   {/* Purchased Products */}
                   <ul className="mt-2 mb-2">
                     {bill.items.map((item, index) => {
-                      const product = products.find(
-                        (p) => (p._id || p.id) === item.productId
-                      );
-                      const price = item.price !== undefined ? item.price : (product?.price || 0);
+                      const product = products.find((p) => (p._id || p.id) === item.productId);
+                      const price =
+                        item.price !== undefined ? item.price : product?.price || 0;
                       return (
                         <li key={index}>
-                          {product?.name || "Unknown"} - {item.quantity}kg @ ₹{price.toFixed(2)}/kg
+                          {product?.name || "Unknown"} - {item.quantity}kg @ ₹
+                          {price.toFixed(2)}/kg
                         </li>
                       );
                     })}
@@ -182,14 +194,16 @@ function History() {
           </ul>
         )}
         {/* Off-screen download component for the selected bill */}
-        <div style={{ position: "absolute", left: "-9999px", top: 0, zIndex: -1, width: "800px" }}>
-          {billToDownload && (
-            <Print
-              ref={downloadRef}
-              bill={billToDownload}
-              products={products}
-            />
-          )}
+        <div
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            top: 0,
+            zIndex: -1,
+            width: "800px",
+          }}
+        >
+          {billToDownload && <Print ref={downloadRef} bill={billToDownload} products={products} />}
         </div>
       </div>
     </div>
