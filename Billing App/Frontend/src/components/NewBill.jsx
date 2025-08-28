@@ -13,8 +13,11 @@ function NewBill() {
   const [deliveryCharges, setDeliveryCharges] = useState('');
   const [outstanding, setOutstanding] = useState('');
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
+
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_BASE}/api/products`, { headers: { 'X-API-KEY': API_KEY } })
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(error => console.error('Error fetching products:', error));
@@ -84,9 +87,9 @@ function NewBill() {
     console.log('Saving bill:', billData);
 
     try {
-      const response = await fetch('http://localhost:5000/api/bills', {
+      const response = await fetch(`${API_BASE}/api/bills`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
         body: JSON.stringify(billData)
       });
       const savedBill = await response.json();

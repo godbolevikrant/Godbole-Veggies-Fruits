@@ -7,6 +7,9 @@ function PendingBills() {
   const [outstanding, setOutstanding] = useState("");
   const [status, setStatus] = useState("pending");
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
+
   // Fetch pending bills
   useEffect(() => {
     fetchBills();
@@ -14,7 +17,7 @@ function PendingBills() {
 
   const fetchBills = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/pending-bills");
+      const res = await fetch(`${API_BASE}/api/pending-bills`, { headers: { 'X-API-KEY': API_KEY } });
       const data = await res.json();
       setBills(data);
     } catch (err) {
@@ -34,9 +37,9 @@ function PendingBills() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/pending-bills", {
+      const res = await fetch(`${API_BASE}/api/pending-bills`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'X-API-KEY': API_KEY },
         body: JSON.stringify(newBill),
       });
 
@@ -61,8 +64,9 @@ function PendingBills() {
     if (!window.confirm("Are you sure you want to delete this bill?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/pending-bills/${id}`, {
+      const res = await fetch(`${API_BASE}/api/pending-bills/${id}`, {
         method: "DELETE",
+        headers: { 'X-API-KEY': API_KEY },
       });
 
       if (res.ok) {

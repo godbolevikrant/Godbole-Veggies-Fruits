@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 function getPeriodItems(items, period) {
+  if (!Array.isArray(items)) return [];
   const now = new Date();
   return items.filter((item) => {
     const itemDate = new Date(item.date);
@@ -41,12 +42,15 @@ function Reports() {
   const [manualAmount, setManualAmount] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
+
   // ✅ Fetch bills & manual entries
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch("http://localhost:5000/api/bills").then((res) => res.json()),
-      fetch("http://localhost:5000/api/manual-entries").then((res) => res.json()),
+      fetch(`${API_BASE}/api/bills`, { headers: { 'X-API-KEY': API_KEY } }).then((res) => res.json()),
+      fetch(`${API_BASE}/api/manual-entries`, { headers: { 'X-API-KEY': API_KEY } }).then((res) => res.json()),
     ])
       .then(([billsData, manualData]) => {
         setBills(billsData);
@@ -76,9 +80,9 @@ function Reports() {
     e.preventDefault();
     if (!manualAmount) return;
     const entry = { type: "sale", amount: parseFloat(manualAmount) };
-    const res = await fetch("http://localhost:5000/api/manual-entries", {
+    const res = await fetch(`${API_BASE}/api/manual-entries`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", 'X-API-KEY': API_KEY },
       body: JSON.stringify(entry),
     });
     const data = await res.json();
@@ -91,9 +95,9 @@ function Reports() {
     e.preventDefault();
     if (!expenseAmount) return;
     const entry = { type: "expense", amount: parseFloat(expenseAmount) };
-    const res = await fetch("http://localhost:5000/api/manual-entries", {
+    const res = await fetch(`${API_BASE}/api/manual-entries`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", 'X-API-KEY': API_KEY },
       body: JSON.stringify(entry),
     });
     const data = await res.json();
@@ -103,8 +107,9 @@ function Reports() {
 
   // ✅ Delete manual entry
   const handleDeleteEntry = async (id) => {
-    await fetch(`http://localhost:5000/api/manual-entries/${id}`, {
+    await fetch(`${API_BASE}/api/manual-entries/${id}`, {
       method: "DELETE",
+      headers: { 'X-API-KEY': API_KEY },
     });
     setManualEntries(manualEntries.filter((m) => m._id !== id));
   };

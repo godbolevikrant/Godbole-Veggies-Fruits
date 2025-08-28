@@ -33,9 +33,11 @@ app.get('/', (req, res) => {
 });
 
 // API routes
+app.use('/api/users', require('./routes/users'));
+const requireApiKey = require('./middleware/apiKey');
+app.use(requireApiKey); // protect subsequent routes
 app.use('/api/products', require('./routes/products'));
 app.use('/api/bills', require('./routes/bills'));
-app.use('/api/users', require('./routes/users'));
 app.use('/api/pending-bills', require('./routes/pendingBills'));
 app.use("/api/manual-entries", require("./routes/manualEntries"));
 

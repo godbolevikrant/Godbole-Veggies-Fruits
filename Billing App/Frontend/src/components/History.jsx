@@ -14,15 +14,18 @@ function History() {
   const [billToDownload, setBillToDownload] = useState(null);
   const downloadRef = useRef();
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
+
   // Fetch bills and products from backend
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch("http://localhost:5000/api/bills").then((res) => {
+      fetch(`${API_BASE}/api/bills`, { headers: { 'X-API-KEY': API_KEY } }).then((res) => {
         if (!res.ok) throw new Error("Failed to fetch bills");
         return res.json();
       }),
-      fetch("http://localhost:5000/api/products").then((res) => {
+      fetch(`${API_BASE}/api/products`, { headers: { 'X-API-KEY': API_KEY } }).then((res) => {
         if (!res.ok) throw new Error("Failed to fetch products");
         return res.json();
       }),
@@ -73,8 +76,9 @@ function History() {
     if (!window.confirm("Are you sure you want to delete this bill?")) return;
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/bills/${billId}`, {
+      const response = await fetch(`${API_BASE}/api/bills/${billId}`, {
         method: "DELETE",
+        headers: { 'X-API-KEY': API_KEY },
       });
       if (!response.ok) throw new Error("Failed to delete bill");
       setBills(bills.filter((bill) => (bill._id || bill.id) !== billId));

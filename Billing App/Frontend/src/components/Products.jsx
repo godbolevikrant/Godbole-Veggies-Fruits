@@ -9,10 +9,13 @@ function Products() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
+
   // Load products from backend
   useEffect(() => {
     setLoading(true);
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_BASE}/api/products`, { headers: { 'X-API-KEY': API_KEY } })
       .then(res => res.json())
       .then(data => setProducts(data))
       .finally(() => setLoading(false));
@@ -27,9 +30,9 @@ function Products() {
         return;
       }
       if (editId) {
-        const res = await fetch(`http://localhost:5000/api/products/${editId}`, {
+        const res = await fetch(`${API_BASE}/api/products/${editId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
           body: JSON.stringify({ name, price: parseFloat(price) })
         });
         if (!res.ok) throw new Error('Failed to update product');
@@ -37,9 +40,9 @@ function Products() {
         setProducts(products.map(p => p._id === editId ? updated : p));
         setEditId(null);
       } else {
-        const res = await fetch('http://localhost:5000/api/products', {
+        const res = await fetch(`${API_BASE}/api/products`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
           body: JSON.stringify({ name, price: parseFloat(price) })
         });
         if (!res.ok) throw new Error('Failed to add product');
@@ -60,7 +63,7 @@ function Products() {
   };
 
   const handleDelete = async (id) => {
-  await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+  await fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE', headers: { 'X-API-KEY': API_KEY } });
     setProducts(products.filter(p => p._id !== id));
   };
 
