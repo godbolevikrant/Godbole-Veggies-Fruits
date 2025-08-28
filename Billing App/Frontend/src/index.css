@@ -1,0 +1,36 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+}
