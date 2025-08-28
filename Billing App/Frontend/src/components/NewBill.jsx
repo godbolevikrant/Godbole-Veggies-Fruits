@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addBill } from '../store/billsSlice';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -7,12 +8,14 @@ import api from '../api/client';
 function NewBill() {
   const [products, setProducts] = useState([]);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [customerName, setCustomerName] = useState('');
   const [items, setItems] = useState([{ productId: '', quantity: '', rate: '' }]);
   const [discount, setDiscount] = useState('');
   const [deliveryCharges, setDeliveryCharges] = useState('');
   const [outstanding, setOutstanding] = useState('');
+  const [note, setNote] = useState('');
 
   // Load products
   useEffect(() => {
@@ -32,6 +35,7 @@ function NewBill() {
         setDiscount(parsed.discount ?? '');
         setDeliveryCharges(parsed.deliveryCharges ?? '');
         setOutstanding(parsed.outstanding ?? '');
+        setNote(parsed.note ?? '');
       } catch {}
     }
   }, []);
@@ -43,13 +47,14 @@ function NewBill() {
       discount,
       deliveryCharges,
       outstanding,
+      note,
       ts: Date.now(),
     };
     const id = setTimeout(() => {
       localStorage.setItem('draftBill', JSON.stringify(payload));
     }, 300);
     return () => clearTimeout(id);
-  }, [customerName, items, discount, deliveryCharges, outstanding]);
+  }, [customerName, items, discount, deliveryCharges, outstanding, note]);
 
   const addItem = () => {
     setItems([...items, { productId: '', quantity: '', rate: '' }]);
@@ -145,6 +150,7 @@ function NewBill() {
       outstanding: outstandingValue,
       grandTotal: calculateTotal() + outstandingValue,
       date: new Date().toISOString(),
+      note,
     };
 
     console.log('Saving bill:', billData);
@@ -160,9 +166,60 @@ function NewBill() {
       setDiscount('');
       setDeliveryCharges('');
       setOutstanding('');
+      setNote('');
       localStorage.removeItem('draftBill');
+
+      // Navigate to History so the user immediately sees the saved bill
+      navigate('/history');
     } catch (error) {
       alert(error.message || 'Failed to save bill');
+    }
+  };
+
+  const handleSaveAsPending = async () => {
+    const hasInvalidItem = items.some((item) => {
+      const qty = parseFloat(item.quantity);
+      return !item.productId || isNaN(qty) || qty <= 0;
+    });
+    if (hasInvalidItem) {
+      alert('Please select a product and enter quantity > 0 for all items.');
+      return;
+    }
+    const outstandingValue = parseFloat(outstanding) || 0;
+    if (outstandingValue < 0) {
+      alert('Outstanding cannot be negative');
+      return;
+    }
+    const itemsWithPrice = items.map(item => {
+      const product = products.find(p => p._id === item.productId);
+      const price = parseFloat(item.rate) || (product ? product.price : 0);
+      return {
+        name: product ? product.name : 'Unknown',
+        quantity: parseFloat(item.quantity) || 0,
+        price,
+        productId: item.productId || undefined,
+      };
+    });
+    const payload = {
+      customerName,
+      date: new Date().toISOString(),
+      outstanding: outstandingValue,
+      status: 'pending',
+      items: itemsWithPrice,
+      note,
+    };
+    try {
+      await api.post('/api/pending-bills', payload);
+      setCustomerName('');
+      setItems([{ productId: '', quantity: '', rate: '' }]);
+      setDiscount('');
+      setDeliveryCharges('');
+      setOutstanding('');
+      setNote('');
+      localStorage.removeItem('draftBill');
+      alert('Saved as pending');
+    } catch (err) {
+      alert(err.message || 'Failed to save as pending');
     }
   };
 
@@ -351,10 +408,15 @@ function NewBill() {
           <h4 className="fw-bold text-success">
             Grand Total: ₹{(calculateTotal() + (parseFloat(outstanding) || 0)).toFixed(2)}
           </h4>
-          <button className="btn btn-outline-secondary mt-3 me-2" onClick={() => { localStorage.removeItem('draftBill'); setCustomerName(''); setItems([{ productId: '', quantity: '', rate: '' }]); setDiscount(''); setDeliveryCharges(''); setOutstanding(''); }}>Discard Draft</button>
-          <button className="btn btn-success mt-3" onClick={handleSave} disabled={items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0 || (parseFloat(i.rate) || 0) < 0)}>
-            Save Bill
-          </button>
+          <button className="btn btn-outline-secondary mt-3 me-2" onClick={() => { localStorage.removeItem('draftBill'); setCustomerName(''); setItems([{ productId: '', quantity: '', rate: '' }]); setDiscount(''); setDeliveryCharges(''); setOutstanding(''); setNote(''); }}>Discard Draft</button>
+          <div className="btn-group mt-3">
+            <button className="btn btn-success" onClick={handleSave} disabled={items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0 || (parseFloat(i.rate) || 0) < 0)}>
+              Save Bill
+            </button>
+            <button className="btn btn-outline-primary" onClick={handleSaveAsPending} disabled={items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0)}>
+              Save as Pending
+            </button>
+          </div>
           {items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0) && (
             <div className="text-danger small mt-2">Please select a product and enter quantity &gt; 0 for all items.</div>
           )}

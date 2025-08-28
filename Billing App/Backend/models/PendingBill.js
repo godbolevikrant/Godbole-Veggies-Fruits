@@ -13,7 +13,15 @@ const pendingBillSchema = new mongoose.Schema({
   outstanding: { type: Number, default: 0 },
   status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
   items: { type: [pendingBillItemSchema], default: [] },
-  note: { type: String, default: '' }
+  note: { type: String, default: '' },
+  phone: { type: String, default: '' },
+  paidAt: { type: Date, default: null },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 });
+
+// Indexes for common queries
+pendingBillSchema.index({ date: -1 });
+pendingBillSchema.index({ status: 1, date: -1 });
+pendingBillSchema.index({ customerName: 1 });
 
 module.exports = mongoose.model('PendingBill', pendingBillSchema);

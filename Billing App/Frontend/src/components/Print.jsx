@@ -15,9 +15,12 @@ const Print = forwardRef(
         customerName: "",
       },
       products = [],
+      paidOverride = undefined,
     },
     ref
   ) => {
+    const derivedPaid = String(bill.status || '').toLowerCase() === 'paid' || Number(bill.outstanding || 0) === 0;
+    const isPaid = paidOverride != null ? Boolean(paidOverride) : derivedPaid;
     return (
       <div
         ref={ref}
@@ -28,8 +31,26 @@ const Print = forwardRef(
           maxWidth: "800px",
           margin: "0 auto",
           letterSpacing: "2px",
+          position: "relative",
         }}
       >
+        {/* PAID/UNPAID Watermark */}
+        <div
+          style={{
+            position: "absolute",
+            top: "40%",
+            left: "50%",
+            transform: "translate(-50%, -50%) rotate(-20deg)",
+            fontSize: "96px",
+            fontWeight: 900,
+            color: isPaid ? "rgba(46, 125, 50, 0.07)" : "rgba(211, 47, 47, 0.07)",
+            pointerEvents: "none",
+            userSelect: "none",
+            textTransform: "uppercase",
+          }}
+        >
+          {isPaid ? "PAID" : "UNPAID"}
+        </div>
         {/* Shop Header */}
         <div
           style={{
@@ -59,6 +80,21 @@ const Print = forwardRef(
           <p style={{ margin: "5px 0", fontSize: "16px" }}>
             Date: {new Date(bill.date).toLocaleString()}
           </p>
+          <div style={{ margin: "5px 0" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "6px 12px",
+                borderRadius: "9999px",
+                fontWeight: 700,
+                fontSize: "14px",
+                color: isPaid ? "#1b5e20" : "#b71c1c",
+                backgroundColor: isPaid ? "#c8e6c9" : "#ffcdd2",
+              }}
+            >
+              {isPaid ? "PAID" : "UNPAID"}
+            </span>
+          </div>
           {bill.customerName && (
             <p style={{ margin: "5px 0", fontSize: "20px"}}>
               <strong>Customer:</strong> {bill.customerName}

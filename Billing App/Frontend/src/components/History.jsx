@@ -1,8 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useReactToPrint } from "react-to-print";
-import { FaFileAlt, FaPrint, FaTrash } from "react-icons/fa";
+import { FaFileAlt, FaTrash } from "react-icons/fa";
 import Print from "./Print";
 
 function History() {
@@ -64,12 +63,7 @@ function History() {
     }, 200);
   };
 
-  // Handle printing
-  const handlePrint = useReactToPrint({
-    content: () => downloadRef.current,
-    documentTitle: `Bill-${billToDownload?._id || billToDownload?.id || "unknown"}`,
-    onAfterPrint: () => setBillToDownload(null),
-  });
+  // Printing removed; sharing via PDF only
 
   // Handle bill deletion
   const handleDelete = async (billId) => {
@@ -171,22 +165,13 @@ function History() {
                     })}
                   </ul>
 
-                  {/* Download, Print, and Delete Buttons */}
+                  {/* Download and Delete Buttons */}
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-outline-success btn-sm mt-2"
                       onClick={() => handleDownload(bill)}
                     >
-                      <FaPrint className="me-2" /> Download PDF
-                    </button>
-                    <button
-                      className="btn btn-outline-primary btn-sm mt-2"
-                      onClick={() => {
-                        setBillToDownload(bill);
-                        handlePrint();
-                      }}
-                    >
-                      <FaPrint className="me-2" /> Print Bill
+                      Download PDF
                     </button>
                     <button
                       className="btn btn-outline-danger btn-sm mt-2"
@@ -210,7 +195,14 @@ function History() {
             width: "800px",
           }}
         >
-          {billToDownload && <Print ref={downloadRef} bill={billToDownload} products={products} />}
+          {billToDownload && (
+            <Print
+              ref={downloadRef}
+              bill={billToDownload}
+              products={products}
+              paidOverride={true}
+            />
+          )}
         </div>
       </div>
     </div>
