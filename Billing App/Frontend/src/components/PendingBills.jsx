@@ -16,7 +16,7 @@ function PendingBills() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("pending");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [q, setQ] = useState("");
@@ -58,8 +58,9 @@ function PendingBills() {
   const handleMarkPaid = async (id) => {
     try {
       setError("");
-      setBills((prev) => prev.map((b) => b._id === id ? { ...b, status: 'paid', paidAt: new Date().toISOString() } : b));
       await api.post(`/api/pending-bills/${id}/mark-paid`, {});
+      setBills((prev) => prev.filter((b) => b._id !== id));
+      setTotal((t) => Math.max((t || 1) - 1, 0));
     } catch (err) {
       console.error("Error marking paid:", err);
       setError(err.message || 'Failed to mark as paid');
@@ -350,7 +351,7 @@ function PendingBills() {
       {billToDownload ? (
         <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
           <div ref={downloadRef}>
-            <Print bill={billToDownload} products={products} />
+            <Print bill={billToDownload} products={products} paidOverride={false} />
           </div>
         </div>
       ) : null}

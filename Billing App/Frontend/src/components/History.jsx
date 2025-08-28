@@ -63,6 +63,33 @@ function History() {
     }, 200);
   };
 
+  // Share via WhatsApp (opens WhatsApp with prefilled text)
+  const handleShareWhatsApp = (bill) => {
+    const subtotal = (bill.items || []).reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+    const discount = Number(bill.discount || 0);
+    const delivery = Number(bill.deliveryCharges || 0);
+    const outstanding = Number(bill.outstanding || 0);
+    const total = subtotal - discount + delivery + outstanding;
+    const isPaid = outstanding === 0;
+    const lines = [
+      `Godbole Veggies & Fruits`,
+      `Bill #${bill._id || bill.id}`,
+      `Status: ${isPaid ? 'PAID' : 'UNPAID'}`,
+      `Customer: ${bill.customerName || '-'}`,
+      `Date: ${new Date(bill.date).toLocaleString()}`,
+      `Items:`,
+      ...(bill.items || []).map(it => `- ${it.name}: ${it.quantity} kg @ ₹${Number(it.price).toFixed(2)}`),
+      `Subtotal: ₹${subtotal.toFixed(2)}`,
+      `Discount: ₹${discount.toFixed(2)}`,
+      `Delivery: ₹${delivery.toFixed(2)}`,
+      `Outstanding: ₹${outstanding.toFixed(2)}`,
+      `Grand Total: ₹${total.toFixed(2)}`,
+    ];
+    const text = encodeURIComponent(lines.join('\n'));
+    const url = `https://wa.me/?text=${text}`;
+    window.open(url, '_blank');
+  };
+
   // Printing removed; sharing via PDF only
 
   // Handle bill deletion
@@ -165,13 +192,19 @@ function History() {
                     })}
                   </ul>
 
-                  {/* Download and Delete Buttons */}
+                  {/* Download, WhatsApp share, and Delete Buttons */}
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-outline-success btn-sm mt-2"
                       onClick={() => handleDownload(bill)}
                     >
                       Download PDF
+                    </button>
+                    <button
+                      className="btn btn-outline-dark btn-sm mt-2"
+                      onClick={() => handleShareWhatsApp(bill)}
+                    >
+                      WhatsApp
                     </button>
                     <button
                       className="btn btn-outline-danger btn-sm mt-2"
