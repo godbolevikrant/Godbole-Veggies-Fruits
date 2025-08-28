@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const ManualEntrySchema = new mongoose.Schema({
-  type: { type: String, enum: ["sale", "expense"], required: true },
-  amount: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
+const manualEntrySchema = new mongoose.Schema({
+  amount: { type: Number, required: true, min: 0 },
+  type: { type: String, enum: ['sale', 'expense'], required: true },
+  date: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("ManualEntry", ManualEntrySchema);
+module.exports = mongoose.model('ManualEntry', manualEntrySchema);
