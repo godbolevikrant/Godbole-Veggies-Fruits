@@ -32,6 +32,11 @@ function Navbar() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
+  <NavLink className="nav-link" to="/pending-bills">
+    Pending Bills
+  </NavLink>
+</li>
+                <li className="nav-item">
                   <NavLink className="nav-link" to="/products">
                     Products
                   </NavLink>

@@ -8,7 +8,7 @@ function NewBill() {
   const dispatch = useDispatch();
 
   const [customerName, setCustomerName] = useState('');
-  const [items, setItems] = useState([{ productId: '', quantity: '' }]);
+  const [items, setItems] = useState([{ productId: '', quantity: '', rate: '' }]);
   const [discount, setDiscount] = useState('');
   const [deliveryCharges, setDeliveryCharges] = useState('');
   const [outstanding, setOutstanding] = useState('');
@@ -21,7 +21,7 @@ function NewBill() {
   }, []);
 
   const addItem = () => {
-    setItems([...items, { productId: '', quantity: '' }]);
+    setItems([...items, { productId: '', quantity: '', rate: '' }]);
   };
 
   const updateItem = (index, field, value) => {
@@ -37,7 +37,8 @@ function NewBill() {
   const calculateSubtotal = () => {
     return items.reduce((total, item) => {
       const product = products.find((p) => p._id === item.productId);
-      return total + (product ? product.price * (parseFloat(item.quantity) || 0) : 0);
+      const price = parseFloat(item.rate) || (product ? product.price : 0); // manual override
+      return total + price * (parseFloat(item.quantity) || 0);
     }, 0);
   };
 
@@ -60,9 +61,10 @@ function NewBill() {
 
     const itemsWithPrice = items.map(item => {
       const product = products.find(p => p._id === item.productId);
+      const price = parseFloat(item.rate) || (product ? product.price : 0);
       return {
         ...item,
-        price: product ? product.price : 0,
+        price,
         name: product ? product.name : 'Unknown'
       };
     });
@@ -94,7 +96,7 @@ function NewBill() {
 
       // Reset form
       setCustomerName('');
-      setItems([{ productId: '', quantity: '' }]);
+      setItems([{ productId: '', quantity: '', rate: '' }]);
       setDiscount('');
       setDeliveryCharges('');
       setOutstanding('');
@@ -122,7 +124,7 @@ function NewBill() {
         {/* Bill Items */}
         {items.map((item, index) => (
           <div key={index} className="row g-3 mb-3 align-items-center">
-            <div className="col-md-5">
+            <div className="col-md-4">
               <select
                 className="form-select"
                 value={item.productId}
@@ -136,7 +138,7 @@ function NewBill() {
                 ))}
               </select>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <input
                 type="number"
                 step="0.01"
@@ -147,6 +149,16 @@ function NewBill() {
               />
             </div>
             <div className="col-md-3">
+              <input
+                type="number"
+                step="0.01"
+                className="form-control"
+                placeholder="Rate (₹/kg)"
+                value={item.rate}
+                onChange={(e) => updateItem(index, 'rate', e.target.value)}
+              />
+            </div>
+            <div className="col-md-2">
               <button
                 className="btn btn-outline-danger"
                 onClick={() => removeItem(index)}
@@ -157,6 +169,7 @@ function NewBill() {
             </div>
           </div>
         ))}
+
         {/* Add Item Button */}
         <button className="btn btn-outline-success mb-3" onClick={addItem}>
           <FaPlus /> Add Item
@@ -203,8 +216,6 @@ function NewBill() {
             onChange={e => setOutstanding(e.target.value)}
           />
         </div>
-
-        
 
         {/* Totals */}
         <div className="text-end">

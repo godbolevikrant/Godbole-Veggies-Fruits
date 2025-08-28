@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { FaCarrot, FaFileInvoice, FaHistory } from 'react-icons/fa';
+import { FaFileInvoice, FaCarrot, FaHistory, FaClipboardList, FaChartBar } from "react-icons/fa";
+
 
 function Dashboard() {
   return (
@@ -39,6 +40,30 @@ function Dashboard() {
             </div>
           </NavLink>
         </div>
+        <div className="col-md-4">
+  <NavLink to="/pending-bills" className="text-decoration-none">
+    <div className="card text-center shadow h-100">
+      <div className="card-body">
+        <FaClipboardList size={50} className="text-success mb-3" />
+        <h5 className="card-title">Pending Bills</h5>
+        <p className="card-text">Check and manage outstanding bills</p>
+      </div>
+    </div>
+  </NavLink>
+</div>
+
+
+<div className="col-md-4">
+  <NavLink to="/reports" className="text-decoration-none">
+    <div className="card text-center shadow h-100">
+      <div className="card-body">
+        <FaChartBar size={50} className="text-success mb-3" />
+        <h5 className="card-title">Reports</h5>
+        <p className="card-text">Analyze sales and billing reports</p>
+      </div>
+    </div>
+  </NavLink>
+</div>
       </div>
     </div>
   );

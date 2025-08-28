@@ -7,6 +7,7 @@ import NewBill from './components/NewBill';
 import History from './components/History';
 import Reports from './components/Reports';
 import Navbar from './components/Navbar';
+import PendingBills from './components/PendingBills';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -27,6 +28,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+         <Route
+    path="/pending-bills"
+    element={
+      <ProtectedRoute>
+        <PendingBills />
+      </ProtectedRoute>
+    }
+  />
         <Route
           path="/products"
           element={

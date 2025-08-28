@@ -60,7 +60,7 @@ const Print = forwardRef(
             Date: {new Date(bill.date).toLocaleString()}
           </p>
           {bill.customerName && (
-            <p style={{ margin: "5px 0", fontSize: "16px" }}>
+            <p style={{ margin: "5px 0", fontSize: "20px"}}>
               <strong>Customer:</strong> {bill.customerName}
             </p>
           )}
