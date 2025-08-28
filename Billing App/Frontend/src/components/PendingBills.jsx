@@ -108,7 +108,7 @@ function PendingBills() {
     ];
     const text = encodeURIComponent(lines.join('\n'));
     const phoneDigits = (bill.phone || '').replace(/\D/g, '');
-    const url = phoneDigits ? `https://wa.me/${phoneDigits}?text=${text}` : `https://wa.me/?text=${text}`;
+    const url = phoneDigits ? `https://wa.me/${phoneDigits}?text=${text}` : `https://wa.me/9112788838?text=${text}`;
     window.open(url, '_blank');
   };
 
