@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../store/authSlice';
+import { loginRequest } from '../store/authSlice';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import BgImage from '../assets/Shop Logo F.png'; // adjust path
 
@@ -16,16 +16,19 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    dispatch(login({ username, password }));
-    setLoading(false);
-    if (username === 'Admin' && password === 'Admin@123') {
-      navigate('/');
-    } else {
-      setError('Invalid credentials');
+    try {
+      const resultAction = await dispatch(loginRequest({ username: username.trim(), password: password.trim() }));
+      if (loginRequest.rejected.match(resultAction)) {
+        setError(resultAction.payload || 'Invalid credentials');
+      } else {
+        navigate('/');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 

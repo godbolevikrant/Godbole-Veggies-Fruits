@@ -1,4 +1,24 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+export const loginRequest = createAsyncThunk(
+  'auth/login',
+  async ({ username, password }, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:5000'}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return rejectWithValue(data.error || 'Login failed');
+      }
+      return data.user || { username };
+    } catch (err) {
+      return rejectWithValue(err.message || 'Network error');
+    }
+  }
+);
 
 const initialState = {
   isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
@@ -11,18 +31,6 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login(state, action) {
-      const { username, password } = action.payload;
-      if (username === 'Admin' && password === 'Admin@123') {
-        state.isAuthenticated = true;
-        state.user = { username };
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(state.user));
-      } else {
-        state.isAuthenticated = false;
-        state.user = null;
-      }
-    },
     logout(state) {
       state.isAuthenticated = false;
       state.user = null;
@@ -30,7 +38,20 @@ const authSlice = createSlice({
       localStorage.removeItem('user');
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginRequest.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.user = action.payload;
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('user', JSON.stringify(state.user));
+      })
+      .addCase(loginRequest.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+      });
+  },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,10 +1,18 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*'}));
+// Basic security headers and allow credentials if single origin configured
+if (process.env.FRONTEND_ORIGIN) {
+  app.use((req, res, next) => {
+    res.header('Vary', 'Origin');
+    next();
+  });
+}
 app.use(express.json());
 
 // Connect to MongoDB
