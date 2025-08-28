@@ -63,7 +63,15 @@ function Reports() {
   const periodBills = getPeriodItems(bills, period);
   const periodManuals = getPeriodItems(manualEntries, period);
 
-  const summary = getSummary(periodBills);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const summary = getSummary(periodBills.filter((b) => {
+    if (!from && !to) return true;
+    const d = new Date(b.date).getTime();
+    const min = from ? new Date(from).getTime() : -Infinity;
+    const max = to ? new Date(to).getTime() + 24*60*60*1000 - 1 : Infinity;
+    return d >= min && d <= max;
+  }));
 
   const totalManualSales = periodManuals
     .filter((m) => m.type === "sale")
@@ -145,6 +153,52 @@ function Reports() {
       {/* Summary Card */}
       <div className="card p-4 mb-4">
         <h4 className="mb-3">Summary</h4>
+        <div className="row g-3 mb-3">
+          <div className="col-sm-6 col-md-3">
+            <label className="form-label">From</label>
+            <input type="date" className="form-control" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="col-sm-6 col-md-3">
+            <label className="form-label">To</label>
+            <input type="date" className="form-control" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+          <div className="col-md-3 d-flex align-items-end">
+            <button className="btn btn-outline-secondary me-2" onClick={() => { setFrom(""); setTo(""); }}>Clear</button>
+            <button className="btn btn-outline-success" onClick={() => {
+              // CSV export of filtered bills
+              const rows = [
+                ['Bill ID','Date','Customer','Subtotal','Discount','Delivery','Outstanding','Total','GrandTotal'],
+                ...periodBills
+                  .filter((b) => {
+                    if (!from && !to) return true;
+                    const d = new Date(b.date).getTime();
+                    const min = from ? new Date(from).getTime() : -Infinity;
+                    const max = to ? new Date(to).getTime() + 24*60*60*1000 - 1 : Infinity;
+                    return d >= min && d <= max;
+                  })
+                  .map((b) => [
+                    b._id || b.id,
+                    new Date(b.date).toLocaleString(),
+                    b.customerName || '',
+                    b.subtotal || 0,
+                    b.discount || 0,
+                    b.deliveryCharges || 0,
+                    b.outstanding || 0,
+                    b.total || 0,
+                    b.grandTotal ?? (b.total || 0) + (b.outstanding || 0),
+                  ])
+              ];
+              const csv = rows.map(r => r.map(v => String(v).replace(/"/g,'""')).map(v => `"${v}"`).join(',')).join('\n');
+              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'reports.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}>Export CSV</button>
+          </div>
+        </div>
         {loading ? (
           <p>Loading...</p>
         ) : error ? (

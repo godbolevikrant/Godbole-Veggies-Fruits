@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { addBill } from '../store/billsSlice';
 import { FaPlus, FaTrash } from 'react-icons/fa';
+import api from '../api/client';
 
 function NewBill() {
   const [products, setProducts] = useState([]);
@@ -13,15 +14,42 @@ function NewBill() {
   const [deliveryCharges, setDeliveryCharges] = useState('');
   const [outstanding, setOutstanding] = useState('');
 
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
-  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
-
+  // Load products
   useEffect(() => {
-    fetch(`${API_BASE}/api/products`, { headers: { 'X-API-KEY': API_KEY } })
-      .then(res => res.json())
+    api.get('/api/products')
       .then(data => setProducts(data))
       .catch(error => console.error('Error fetching products:', error));
   }, []);
+
+  // Draft autosave/load
+  useEffect(() => {
+    const draft = localStorage.getItem('draftBill');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        setCustomerName(parsed.customerName || '');
+        setItems(parsed.items && Array.isArray(parsed.items) && parsed.items.length ? parsed.items : [{ productId: '', quantity: '', rate: '' }]);
+        setDiscount(parsed.discount ?? '');
+        setDeliveryCharges(parsed.deliveryCharges ?? '');
+        setOutstanding(parsed.outstanding ?? '');
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    const payload = {
+      customerName,
+      items,
+      discount,
+      deliveryCharges,
+      outstanding,
+      ts: Date.now(),
+    };
+    const id = setTimeout(() => {
+      localStorage.setItem('draftBill', JSON.stringify(payload));
+    }, 300);
+    return () => clearTimeout(id);
+  }, [customerName, items, discount, deliveryCharges, outstanding]);
 
   const addItem = () => {
     setItems([...items, { productId: '', quantity: '', rate: '' }]);
@@ -30,6 +58,30 @@ function NewBill() {
   const updateItem = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
+    // When product selected, auto-fill rate from product or last-used rate
+    if (field === 'productId') {
+      const selected = products.find(p => p._id === value);
+      const todayKey = new Date().toISOString().slice(0,10);
+      const lastRates = JSON.parse(localStorage.getItem('lastRates') || '{}');
+      const lastForToday = (lastRates[todayKey] && lastRates[todayKey][value]) || null;
+      if (selected) {
+        newItems[index].rate = lastForToday != null ? String(lastForToday) : String(selected.price ?? '');
+      }
+    }
+    // When rate changes, remember last used rate per product for today
+    if (field === 'rate') {
+      const productId = newItems[index].productId;
+      if (productId) {
+        const todayKey = new Date().toISOString().slice(0,10);
+        const lastRates = JSON.parse(localStorage.getItem('lastRates') || '{}');
+        lastRates[todayKey] = lastRates[todayKey] || {};
+        const asNum = parseFloat(value);
+        if (!isNaN(asNum)) {
+          lastRates[todayKey][productId] = asNum;
+          localStorage.setItem('lastRates', JSON.stringify(lastRates));
+        }
+      }
+    }
     setItems(newItems);
   };
 
@@ -98,14 +150,8 @@ function NewBill() {
     console.log('Saving bill:', billData);
 
     try {
-      const response = await fetch(`${API_BASE}/api/bills`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
-        body: JSON.stringify(billData)
-      });
-      const savedBill = await response.json();
+      const savedBill = await api.post('/api/bills', billData);
       console.log('API response:', savedBill);
-
       dispatch(addBill(savedBill));
 
       // Reset form
@@ -114,8 +160,52 @@ function NewBill() {
       setDiscount('');
       setDeliveryCharges('');
       setOutstanding('');
+      localStorage.removeItem('draftBill');
     } catch (error) {
-      console.error('Error saving bill:', error);
+      alert(error.message || 'Failed to save bill');
+    }
+  };
+
+  // Keyboard shortcuts: Ctrl+Enter add item, Ctrl+S save
+  const onKeyDown = useCallback((e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      addItem();
+    }
+    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+      e.preventDefault();
+      handleSave();
+    }
+  }, [addItem, handleSave]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onKeyDown]);
+
+  // Inline Add Product modal state
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdPrice, setNewProdPrice] = useState('');
+
+  const submitNewProduct = async (e) => {
+    e.preventDefault();
+    if (!newProdName || !newProdPrice) return;
+    try {
+      const created = await api.post('/api/products', { name: newProdName, price: parseFloat(newProdPrice) });
+      setProducts((prev) => [...prev, created]);
+      // Preselect in last item if empty
+      setItems((prev) => {
+        const clone = [...prev];
+        const idx = clone.length - 1;
+        if (idx >= 0 && !clone[idx].productId) clone[idx].productId = created._id;
+        return clone;
+      });
+      setShowAddProduct(false);
+      setNewProdName('');
+      setNewProdPrice('');
+    } catch (err) {
+      alert(err.message || 'Failed to add product');
     }
   };
 
@@ -160,6 +250,7 @@ function NewBill() {
                   </option>
                 ))}
               </select>
+              <button type="button" className="btn btn-link p-0 mt-1" onClick={() => setShowAddProduct(true)}>+ Add product</button>
             </div>
             <div className="col-md-3">
               <input
@@ -198,7 +289,7 @@ function NewBill() {
           <FaPlus /> Add Item
         </button>
 
-        {/* Discount Field */}
+        {/* Discount Field with presets */}
         <div className="mb-4">
           <label className="form-label fw-bold">Discount (₹)</label>
           <input
@@ -210,9 +301,14 @@ function NewBill() {
             min="0"
             onChange={e => setDiscount(e.target.value)}
           />
+          <div className="mt-2 d-flex gap-2">
+            {[0, 10, 20, 50].map(v => (
+              <button key={v} type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setDiscount(String(v))}>{v}</button>
+            ))}
+          </div>
         </div>
 
-        {/* Delivery Charges Field */}
+        {/* Delivery Charges Field with presets */}
         <div className="mb-4">
           <label className="form-label fw-bold">Delivery Charges (₹)</label>
           <input
@@ -224,6 +320,11 @@ function NewBill() {
             min="0"
             onChange={e => setDeliveryCharges(e.target.value)}
           />
+          <div className="mt-2 d-flex gap-2">
+            {[0, 20, 30, 50].map(v => (
+              <button key={v} type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setDeliveryCharges(String(v))}>{v}</button>
+            ))}
+          </div>
         </div>
 
         {/* Outstanding Balance Field */}
@@ -241,7 +342,7 @@ function NewBill() {
         </div>
 
         {/* Totals */}
-        <div className="text-end">
+        <div className="text-end" style={{ position: 'sticky', bottom: 0, background: '#fff' }}>
           <h5>Subtotal: ₹{calculateSubtotal().toFixed(2)}</h5>
           <h5>Discount: ₹{(parseFloat(discount) || 0).toFixed(2)}</h5>
           <h5>Delivery Charges: ₹{(parseFloat(deliveryCharges) || 0).toFixed(2)}</h5>
@@ -250,11 +351,45 @@ function NewBill() {
           <h4 className="fw-bold text-success">
             Grand Total: ₹{(calculateTotal() + (parseFloat(outstanding) || 0)).toFixed(2)}
           </h4>
-          <button className="btn btn-success mt-3" onClick={handleSave}>
+          <button className="btn btn-outline-secondary mt-3 me-2" onClick={() => { localStorage.removeItem('draftBill'); setCustomerName(''); setItems([{ productId: '', quantity: '', rate: '' }]); setDiscount(''); setDeliveryCharges(''); setOutstanding(''); }}>Discard Draft</button>
+          <button className="btn btn-success mt-3" onClick={handleSave} disabled={items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0 || (parseFloat(i.rate) || 0) < 0)}>
             Save Bill
           </button>
+          {items.some(i => !i.productId || (parseFloat(i.quantity) || 0) <= 0) && (
+            <div className="text-danger small mt-2">Please select a product and enter quantity &gt; 0 for all items.</div>
+          )}
         </div>
       </div>
+
+      {/* Inline Add Product Modal */}
+      {showAddProduct && (
+        <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Product</h5>
+                <button type="button" className="btn-close" onClick={() => setShowAddProduct(false)}></button>
+              </div>
+              <form onSubmit={submitNewProduct}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Name</label>
+                    <input className="form-control" value={newProdName} onChange={(e) => setNewProdName(e.target.value)} />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Price per kg (₹)</label>
+                    <input type="number" step="0.01" className="form-control" value={newProdPrice} onChange={(e) => setNewProdPrice(e.target.value)} />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => setShowAddProduct(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-success">Add</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

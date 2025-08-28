@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import api from '../api/client';
 
 function Products() {
   const [name, setName] = useState('');
@@ -9,15 +10,12 @@ function Products() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
-  const API_KEY = import.meta.env.VITE_API_KEY || 'dev-secret-key';
-
   // Load products from backend
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE}/api/products`, { headers: { 'X-API-KEY': API_KEY } })
-      .then(res => res.json())
+    api.get('/api/products')
       .then(data => setProducts(data))
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -30,23 +28,11 @@ function Products() {
         return;
       }
       if (editId) {
-        const res = await fetch(`${API_BASE}/api/products/${editId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
-          body: JSON.stringify({ name, price: parseFloat(price) })
-        });
-        if (!res.ok) throw new Error('Failed to update product');
-        const updated = await res.json();
+        const updated = await api.put(`/api/products/${editId}`, { name, price: parseFloat(price) });
         setProducts(products.map(p => p._id === editId ? updated : p));
         setEditId(null);
       } else {
-        const res = await fetch(`${API_BASE}/api/products`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY },
-          body: JSON.stringify({ name, price: parseFloat(price) })
-        });
-        if (!res.ok) throw new Error('Failed to add product');
-        const newProduct = await res.json();
+        const newProduct = await api.post('/api/products', { name, price: parseFloat(price) });
         setProducts([...products, newProduct]);
       }
       setName('');
@@ -63,7 +49,7 @@ function Products() {
   };
 
   const handleDelete = async (id) => {
-  await fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE', headers: { 'X-API-KEY': API_KEY } });
+    await api.del(`/api/products/${id}`);
     setProducts(products.filter(p => p._id !== id));
   };
 
