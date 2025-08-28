@@ -81,10 +81,13 @@ function PendingBills() {
 
   return (
     <div className="container py-5">
-      <h1 className="mb-5 text-success text-center">Pending Bills</h1>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0 text-success">Pending Bills</h1>
+        {bills?.length ? <span className="badge text-bg-light">{bills.length} items</span> : null}
+      </div>
 
       {/* Add Bill Form */}
-      <div className="card p-4 mb-4 shadow-sm">
+      <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <h5 className="mb-3">Add Pending Bill</h5>
         <form onSubmit={handleSubmit} className="row g-3">
           <div className="col-md-3">
@@ -137,8 +140,8 @@ function PendingBills() {
 
       {/* Pending Bills List */}
       <div className="table-responsive">
-        <table className="table table-bordered table-hover">
-          <thead className="table-light">
+        <table className="table table-hover align-middle">
+          <thead className="table-light sticky-top">
             <tr>
               <th>Customer Name</th>
               <th>Date</th>
@@ -162,10 +165,7 @@ function PendingBills() {
                     )}
                   </td>
                   <td>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleDelete(bill._id)}
-                    >
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(bill._id)}>
                       Delete
                     </button>
                   </td>

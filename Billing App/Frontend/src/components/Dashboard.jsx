@@ -1,69 +1,55 @@
 import { NavLink } from 'react-router-dom';
 import { FaFileInvoice, FaCarrot, FaHistory, FaClipboardList, FaChartBar } from "react-icons/fa";
 
-
 function Dashboard() {
+  const Card = ({ to, icon, title, subtitle }) => (
+    <div className="col">
+      <NavLink to={to} className="text-decoration-none">
+        <div className="card text-center shadow-sm h-100 border-0 rounded-4 hover-shadow">
+          <div className="card-body py-4">
+            {icon}
+            <h5 className="card-title mt-2 text-dark">{title}</h5>
+            <p className="card-text text-muted mb-0">{subtitle}</p>
+          </div>
+        </div>
+      </NavLink>
+    </div>
+  );
+
   return (
     <div className="container py-5">
-      <h1 className="text-center mb-5 text-success">Dashboard</h1>
-      <div className="row g-4">
-        <div className="col-md-4">
-          <NavLink to="/new-bill" className="text-decoration-none">
-            <div className="card text-center shadow h-100">
-              <div className="card-body">
-                <FaFileInvoice size={50} className="text-success mb-3" />
-                <h5 className="card-title">New Bill</h5>
-                <p className="card-text">Create a new bill for customers</p>
-              </div>
-            </div>
-          </NavLink>
-        </div>
-        <div className="col-md-4">
-          <NavLink to="/products" className="text-decoration-none">
-            <div className="card text-center shadow h-100">
-              <div className="card-body">
-                <FaCarrot size={50} className="text-success mb-3" />
-                <h5 className="card-title">Products</h5>
-                <p className="card-text">Manage vegetables & fruits</p>
-              </div>
-            </div>
-          </NavLink>
-        </div>
-        <div className="col-md-4">
-          <NavLink to="/history" className="text-decoration-none">
-            <div className="card text-center shadow h-100">
-              <div className="card-body">
-                <FaHistory size={50} className="text-success mb-3" />
-                <h5 className="card-title">History</h5>
-                <p className="card-text">View past bills</p>
-              </div>
-            </div>
-          </NavLink>
-        </div>
-        <div className="col-md-4">
-  <NavLink to="/pending-bills" className="text-decoration-none">
-    <div className="card text-center shadow h-100">
-      <div className="card-body">
-        <FaClipboardList size={50} className="text-success mb-3" />
-        <h5 className="card-title">Pending Bills</h5>
-        <p className="card-text">Check and manage outstanding bills</p>
-      </div>
-    </div>
-  </NavLink>
-</div>
-
-
-<div className="col-md-4">
-  <NavLink to="/reports" className="text-decoration-none">
-    <div className="card text-center shadow h-100">
-      <div className="card-body">
-        <FaChartBar size={50} className="text-success mb-3" />
-        <h5 className="card-title">Reports</h5>
-        <p className="card-text">Analyze sales and billing reports</p>
-      </div>
-    </div>
-  </NavLink>
-</div>
+      <h1 className="text-center mb-4 text-success">Dashboard</h1>
+      <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        <Card
+          to="/new-bill"
+          title="New Bill"
+          subtitle="Create a new bill for customers"
+          icon={<FaFileInvoice size={46} className="text-success mb-2" />}
+        />
+        <Card
+          to="/products"
+          title="Products"
+          subtitle="Manage vegetables & fruits"
+          icon={<FaCarrot size={46} className="text-success mb-2" />}
+        />
+        <Card
+          to="/history"
+          title="History"
+          subtitle="View past bills"
+          icon={<FaHistory size={46} className="text-success mb-2" />}
+        />
+        <Card
+          to="/pending-bills"
+          title="Pending Bills"
+          subtitle="Check and manage outstanding bills"
+          icon={<FaClipboardList size={46} className="text-success mb-2" />}
+        />
+        <Card
+          to="/reports"
+          title="Reports"
+          subtitle="Analyze sales and billing reports"
+          icon={<FaChartBar size={46} className="text-success mb-2" />}
+        />
       </div>
     </div>
   );

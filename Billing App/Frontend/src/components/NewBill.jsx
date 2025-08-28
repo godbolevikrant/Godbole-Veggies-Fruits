@@ -110,8 +110,17 @@ function NewBill() {
 
   return (
     <div className="container py-5">
-      <h1 className="text-center mb-5 text-success">Create New Bill</h1>
-      <div className="card p-4 shadow">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0 text-success">New Bill</h1>
+        <button className="btn btn-outline-secondary btn-sm" onClick={() => {
+          setCustomerName('');
+          setItems([{ productId: '', quantity: '', rate: '' }]);
+          setDiscount('');
+          setDeliveryCharges('');
+          setOutstanding('');
+        }}>Reset</button>
+      </div>
+      <div className="card border-0 shadow-sm rounded-4 p-4">
         {/* Customer Name */}
         <div className="mb-4">
           <label className="form-label fw-bold">Customer Name</label>

@@ -116,29 +116,31 @@ function Reports() {
 
   return (
     <div className="container py-5">
-      <h1 className="text-center mb-4 text-success">Reports</h1>
-
-      {/* Period selector */}
-      <div className="d-flex justify-content-center mb-4">
-        <button
-          className={`btn btn-outline-success mx-2${period === "daily" ? " active" : ""}`}
-          onClick={() => setPeriod("daily")}
-        >
-          Daily
-        </button>
-        <button
-          className={`btn btn-outline-success mx-2${period === "monthly" ? " active" : ""}`}
-          onClick={() => setPeriod("monthly")}
-        >
-          Monthly
-        </button>
-        <button
-          className={`btn btn-outline-success mx-2${period === "yearly" ? " active" : ""}`}
-          onClick={() => setPeriod("yearly")}
-        >
-          Yearly
-        </button>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0 text-success">Reports</h1>
+        <div className="btn-group" role="group" aria-label="Period selector">
+          <button
+            className={`btn btn-outline-success${period === "daily" ? " active" : ""}`}
+            onClick={() => setPeriod("daily")}
+          >
+            Daily
+          </button>
+          <button
+            className={`btn btn-outline-success${period === "monthly" ? " active" : ""}`}
+            onClick={() => setPeriod("monthly")}
+          >
+            Monthly
+          </button>
+          <button
+            className={`btn btn-outline-success${period === "yearly" ? " active" : ""}`}
+            onClick={() => setPeriod("yearly")}
+          >
+            Yearly
+          </button>
+        </div>
       </div>
+
+      {/* Period selector moved to header */}
 
       {/* Summary Card */}
       <div className="card p-4 mb-4">
