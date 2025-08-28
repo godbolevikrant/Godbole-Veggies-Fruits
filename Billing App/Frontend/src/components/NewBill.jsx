@@ -53,6 +53,16 @@ function NewBill() {
   };
 
   const handleSave = async () => {
+    // Client-side validation for items
+    const hasInvalidItem = items.some((item) => {
+      const qty = parseFloat(item.quantity);
+      return !item.productId || isNaN(qty) || qty <= 0;
+    });
+    if (hasInvalidItem) {
+      alert('Please select a product and enter quantity > 0 for all items.');
+      return;
+    }
+
     const discountValue = parseFloat(discount) || 0;
     const deliveryValue = parseFloat(deliveryCharges) || 0;
     const outstandingValue = parseFloat(outstanding) || 0;
@@ -68,6 +78,7 @@ function NewBill() {
       return {
         ...item,
         price,
+        quantity: parseFloat(item.quantity) || 0,
         name: product ? product.name : 'Unknown'
       };
     });
