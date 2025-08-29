@@ -1,14 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addBill } from '../store/billsSlice';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import api from '../api/client';
+import Print from './Print';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 function NewBill() {
   const [products, setProducts] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const downloadRef = useRef(null);
+  const [billToDownload, setBillToDownload] = useState(null);
 
   const [customerName, setCustomerName] = useState('');
   const [items, setItems] = useState([{ productId: '', quantity: '', rate: '' }]);
@@ -203,21 +208,58 @@ function NewBill() {
     const payload = {
       customerName,
       date: new Date().toISOString(),
+      discount: parseFloat(discount) || 0,
+      deliveryCharges: parseFloat(deliveryCharges) || 0,
       outstanding: outstandingValue,
       status: 'pending',
       items: itemsWithPrice,
       note,
     };
     try {
-      await api.post('/api/pending-bills', payload);
-      setCustomerName('');
-      setItems([{ productId: '', quantity: '', rate: '' }]);
-      setDiscount('');
-      setDeliveryCharges('');
-      setOutstanding('');
-      setNote('');
-      localStorage.removeItem('draftBill');
-      alert('Saved as pending');
+      const saved = await api.post('/api/pending-bills', payload);
+
+      // Prepare bill object for Print component
+      const printableBill = {
+        _id: saved._id,
+        id: saved._id,
+        customerName: saved.customerName || customerName,
+        date: saved.date || payload.date,
+        items: saved.items && saved.items.length ? saved.items : itemsWithPrice,
+        discount: saved.discount ?? payload.discount ?? 0,
+        deliveryCharges: saved.deliveryCharges ?? payload.deliveryCharges ?? 0,
+        outstanding: saved.outstanding ?? outstandingValue,
+        status: saved.status || 'pending',
+        note: saved.note || note,
+      };
+
+      // Trigger hidden render, then capture to PDF
+      setBillToDownload(printableBill);
+      setTimeout(async () => {
+        try {
+          const input = downloadRef.current;
+          if (!input) throw new Error('Bill content not found');
+          const canvas = await html2canvas(input, { scale: 2 });
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+          pdf.save(`Pending-Bill-${saved._id}.pdf`);
+        } catch (e) {
+          alert('Saved as pending, but PDF generation failed. You can download from Pending Bills.\n' + (e.message || e));
+        } finally {
+          setBillToDownload(null);
+          // Reset form after PDF attempt
+          setCustomerName('');
+          setItems([{ productId: '', quantity: '', rate: '' }]);
+          setDiscount('');
+          setDeliveryCharges('');
+          setOutstanding('');
+          setNote('');
+          localStorage.removeItem('draftBill');
+          alert('Saved as pending');
+        }
+      }, 200);
     } catch (err) {
       alert(err.message || 'Failed to save as pending');
     }
@@ -452,6 +494,14 @@ function NewBill() {
           </div>
         </div>
       )}
+      {/* Hidden render target for pending bill PDF download */}
+      {billToDownload ? (
+        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+          <div ref={downloadRef}>
+            <Print bill={billToDownload} products={products} paidOverride={false} />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

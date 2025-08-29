@@ -95,7 +95,9 @@ function PendingBills() {
   // Share via WhatsApp (opens WhatsApp with prefilled text)
   const handleShareWhatsApp = (bill) => {
     const subtotal = (bill.items || []).reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
-    const totalDue = subtotal + (Number(bill.outstanding) || 0);
+    const discount = Number(bill.discount) || 0;
+    const deliveryCharges = Number(bill.deliveryCharges) || 0;
+    const totalDue = subtotal - discount + deliveryCharges + (Number(bill.outstanding) || 0);
     const lines = [
       `Godbole Veggies & Fruits`,
       `Pending Bill`,
@@ -103,8 +105,10 @@ function PendingBills() {
       `Date: ${new Date(bill.date).toLocaleString()}`,
       `Items:`,
       ...(bill.items || []).map(it => `- ${it.name}: ${it.quantity} kg @ ₹${Number(it.price).toFixed(2)}`),
+      `Discount: ₹${discount.toFixed(2)}`,
+      `Delivery: ₹${deliveryCharges.toFixed(2)}`,
       `Outstanding: ₹${Number(bill.outstanding || 0).toFixed(2)}`,
-      `Total Due: ₹${totalDue.toFixed(2)}`,
+      `Total Due: ${totalDue.toFixed(2)}`,
     ];
     const text = encodeURIComponent(lines.join('\n'));
     const phoneDigits = (bill.phone || '').replace(/\D/g, '');
@@ -300,7 +304,9 @@ function PendingBills() {
                   <td>
                     {(() => {
                       const subtotal = (bill.items || []).reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
-                      const grand = subtotal + (Number(bill.outstanding) || 0);
+                      const discount = Number(bill.discount) || 0;
+                      const deliveryCharges = Number(bill.deliveryCharges) || 0;
+                      const grand = subtotal - discount + deliveryCharges + (Number(bill.outstanding) || 0);
                       return `₹${grand.toFixed(2)}`;
                     })()}
                   </td>

@@ -33,8 +33,10 @@ exports.getPendingBills = async (req, res, next) => {
 
 exports.createPendingBill = async (req, res, next) => {
   try {
-    const { customerName, date, outstanding = 0, status = 'pending', items = [], note = '', phone = '', createdBy = null } = req.body;
+    const { customerName, date, discount = 0, deliveryCharges = 0, outstanding = 0, status = 'pending', items = [], note = '', phone = '', createdBy = null } = req.body;
     if (!customerName || typeof customerName !== 'string') return res.status(400).json({ error: 'customerName is required' });
+    if (typeof discount !== 'number' || discount < 0) return res.status(400).json({ error: 'discount must be non-negative number' });
+    if (typeof deliveryCharges !== 'number' || deliveryCharges < 0) return res.status(400).json({ error: 'deliveryCharges must be non-negative number' });
     if (typeof outstanding !== 'number' || outstanding < 0) return res.status(400).json({ error: 'outstanding must be non-negative number' });
     if (!['pending', 'paid'].includes(status)) return res.status(400).json({ error: 'status must be pending or paid' });
     if (note && String(note).length > 1000) return res.status(400).json({ error: 'note too long' });
@@ -51,7 +53,7 @@ exports.createPendingBill = async (req, res, next) => {
         if (!Number.isFinite(price) || price < 0) return res.status(400).json({ error: 'item.price must be >= 0' });
       }
     }
-    const bill = new PendingBill({ customerName, date: parsedDate, outstanding, status, items, note, phone, createdBy });
+    const bill = new PendingBill({ customerName, date: parsedDate, discount, deliveryCharges, outstanding, status, items, note, phone, createdBy });
     await bill.save();
     res.status(201).json(bill);
   } catch (err) { next(err); }
@@ -99,8 +101,8 @@ exports.markPendingBillPaid = async (req, res, next) => {
 
     // Compute totals from pending items
     const subtotal = (pending.items || []).reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
-    const discount = 0;
-    const deliveryCharges = 0;
+    const discount = Number(pending.discount) || 0;
+    const deliveryCharges = Number(pending.deliveryCharges) || 0;
     const total = subtotal - discount + deliveryCharges;
     const outstanding = Number(pending.outstanding) || 0;
     const grandTotal = total + outstanding;

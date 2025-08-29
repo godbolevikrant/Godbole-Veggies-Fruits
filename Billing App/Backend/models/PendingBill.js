@@ -10,6 +10,8 @@ const pendingBillItemSchema = new mongoose.Schema({
 const pendingBillSchema = new mongoose.Schema({
   customerName: { type: String, required: true, trim: true },
   date: { type: Date, default: Date.now },
+  discount: { type: Number, default: 0 },
+  deliveryCharges: { type: Number, default: 0 },
   outstanding: { type: Number, default: 0 },
   status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
   items: { type: [pendingBillItemSchema], default: [] },
