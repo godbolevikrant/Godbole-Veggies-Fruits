@@ -286,7 +286,7 @@ function PendingBills() {
               <th>Outstanding (₹)</th>
               <th>Grand Total (₹)</th>
               <th>Status</th>
-              <th>Note</th>
+              <th className="d-none d-md-table-cell">Note</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -311,15 +311,31 @@ function PendingBills() {
                       <span className="badge bg-danger">Pending</span>
                     )}
                   </td>
-                  <td className="text-truncate" style={{ maxWidth: 240 }}>{bill.note}</td>
+                  <td className="text-truncate d-none d-md-table-cell" style={{ maxWidth: 240 }}>{bill.note}</td>
                   <td>
-                    <div className="btn-group">
+                    {/* Desktop actions */}
+                    <div className="btn-group d-none d-md-inline-flex">
                       {bill.status !== 'paid' && (
                         <button className="btn btn-sm btn-outline-success" onClick={() => handleMarkPaid(bill._id)} disabled={loading}>Mark Paid</button>
                       )}
-                      <button className="btn btn-sm btn-outline-primary" onClick={() => handleDownload(bill)} disabled={loading}>Download PDF</button>
+                      <button className="btn btn-sm btn-outline-primary" onClick={() => handleDownload(bill)} disabled={loading}>PDF</button>
                       <button className="btn btn-sm btn-outline-dark" onClick={() => handleShareWhatsApp(bill)} disabled={loading}>WhatsApp</button>
                       <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(bill._id)} disabled={loading}>Delete</button>
+                    </div>
+                    {/* Mobile actions dropdown */}
+                    <div className="dropdown d-inline-block d-md-none">
+                      <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Actions
+                      </button>
+                      <ul className="dropdown-menu dropdown-menu-end">
+                        {bill.status !== 'paid' && (
+                          <li><button className="dropdown-item" onClick={() => handleMarkPaid(bill._id)} disabled={loading}>Mark Paid</button></li>
+                        )}
+                        <li><button className="dropdown-item" onClick={() => handleDownload(bill)} disabled={loading}>Download PDF</button></li>
+                        <li><button className="dropdown-item" onClick={() => handleShareWhatsApp(bill)} disabled={loading}>Share WhatsApp</button></li>
+                        <li><hr className="dropdown-divider" /></li>
+                        <li><button className="dropdown-item text-danger" onClick={() => handleDelete(bill._id)} disabled={loading}>Delete</button></li>
+                      </ul>
                     </div>
                   </td>
                 </tr>

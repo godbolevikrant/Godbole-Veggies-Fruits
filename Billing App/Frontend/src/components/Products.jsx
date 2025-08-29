@@ -190,17 +190,35 @@ function Products() {
                 </div>
               </li>
               {sorted.map((product) => (
-                <li key={product._id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <span className="fw-medium">{product.name}</span>
-                  <span className="text-muted">₹{product.price}/kg</span>
-                  <span>
-                    <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit(product)}>
-                      <FaEdit />
-                    </button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(product._id)}>
-                      <FaTrash />
-                    </button>
-                  </span>
+                <li key={product._id} className="list-group-item">
+                  <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div className="me-auto">
+                      <div className="fw-medium">{product.name}</div>
+                      <div className="text-muted small d-md-none">₹{product.price}/kg</div>
+                    </div>
+                    <div className="text-muted d-none d-md-block">₹{product.price}/kg</div>
+                    <div>
+                      {/* Desktop actions */}
+                      <div className="btn-group d-none d-md-inline-flex">
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(product)}>
+                          <FaEdit />
+                        </button>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(product._id)}>
+                          <FaTrash />
+                        </button>
+                      </div>
+                      {/* Mobile dropdown */}
+                      <div className="dropdown d-inline d-md-none">
+                        <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          Actions
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-end">
+                          <li><button className="dropdown-item" onClick={() => handleEdit(product)}>Edit</button></li>
+                          <li><button className="dropdown-item text-danger" onClick={() => handleDelete(product._id)}>Delete</button></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </li>
               ))}
               {products.length === 0 && (
