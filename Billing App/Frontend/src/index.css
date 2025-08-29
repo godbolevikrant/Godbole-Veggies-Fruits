@@ -123,6 +123,8 @@ body {
 .sidebar {
   width: 240px;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   position: sticky;
   top: 0;
 }
@@ -156,6 +158,9 @@ body {
   background-color: rgba(255,255,255,0.15) !important;
 }
 
+.sidebar-nav { overflow-y: auto; }
+.sidebar-footer { padding-top: 0.75rem; }
+
 /* Mobile behavior: slide-in */
 @media (max-width: 767.98px) {
   .sidebar {
@@ -165,6 +170,8 @@ body {
     height: 100vh;
     transition: left 200ms ease;
     z-index: 1052;
+    display: flex;
+    flex-direction: column;
   }
   .sidebar.open {
     left: 0;

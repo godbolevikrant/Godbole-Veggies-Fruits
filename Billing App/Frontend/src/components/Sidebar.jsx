@@ -11,7 +11,7 @@ function Sidebar({ isOpen, onClose }) {
       <div className="mb-3 px-2">
         <div className="fw-semibold">Godbole Veggies & Fruits</div>
       </div>
-      <nav className="nav nav-pills flex-column mb-auto">
+      <nav className="nav nav-pills flex-column mb-auto sidebar-nav">
         <NavLink onClick={onClose} end to="/" className={({ isActive }) => `nav-link sidebar-link ${isActive ? 'active' : 'text-white-50'}`}>
           Dashboard
         </NavLink>
@@ -31,7 +31,7 @@ function Sidebar({ isOpen, onClose }) {
           Reports
         </NavLink>
       </nav>
-      <div className="mt-auto pt-3">
+      <div className="sidebar-footer mt-auto pt-3">
         <button
           className="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center"
           onClick={() => { dispatch(logout()); onClose && onClose(); }}
