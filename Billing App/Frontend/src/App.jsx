@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { FaBars } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -6,7 +8,7 @@ import Products from './components/Products';
 import NewBill from './components/NewBill';
 import History from './components/History';
 import Reports from './components/Reports';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import PendingBills from './components/PendingBills';
 
 function ProtectedRoute({ children }) {
@@ -15,10 +17,27 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   return (
-    <div className="min-vh-100 bg-light">
-      <Navbar />
-      <Routes>
+    <div className="min-vh-100 bg-light d-flex">
+      {isAuthenticated && (
+        <>
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          {isSidebarOpen && <div className="sidebar-backdrop d-md-none" onClick={() => setIsSidebarOpen(false)}></div>}
+        </>
+      )}
+      <main className="flex-grow-1 p-3">
+        {isAuthenticated && (
+          <button
+            className="btn btn-success sidebar-toggle d-md-none"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open navigation"
+          >
+            <FaBars />
+          </button>
+        )}
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route
           path="/"
@@ -68,7 +87,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
+        </Routes>
+      </main>
     </div>
   );
 }

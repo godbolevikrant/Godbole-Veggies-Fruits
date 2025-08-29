@@ -118,3 +118,55 @@ body {
   .login-card { padding: 1.25rem; margin: 0 1rem; }
   .login-icon { width: 48px; height: 48px; font-size: 20px; }
 }
+
+/* Sidebar layout */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-toggle {
+  position: relative;
+  width: 60px;
+  height: 40px;
+  border-radius: 4px;
+  padding: 0;
+  margin: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sidebar-toggle svg { font-size: 22px; }
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 1050;
+}
+
+.sidebar-link {
+  color: #ffffffcc;
+}
+
+.sidebar-link.active {
+  color: #fff !important;
+  background-color: rgba(255,255,255,0.15) !important;
+}
+
+/* Mobile behavior: slide-in */
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100vh;
+    transition: left 200ms ease;
+    z-index: 1052;
+  }
+  .sidebar.open {
+    left: 0;
+  }
+}
