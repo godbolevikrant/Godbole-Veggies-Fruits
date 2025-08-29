@@ -3,6 +3,87 @@ body {
   
 }
 
+/* Login page styles */
+.login-wrapper {
+  position: relative;
+}
+
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: transparent;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+.login-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e8f5ee;
+  color: #28a745;
+  font-size: 22px;
+}
+
+/* Inner readable layer when card has image */
+.login-card-backdrop {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255,255,255,0.92),
+    rgba(255,255,255,0.82)
+  );
+  border-radius: 16px;
+}
+
+.login-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.login-input {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem 0.875rem;
+  transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40,167,69,0.15);
+  background: #fff;
+}
+
+.login-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  text-decoration: none;
+  padding: 0;
+}
+
+.login-eye:hover {
+  color: #111827;
+}
+
+.form-label {
+  font-weight: 600;
+}
+
 .hover-shadow {
   transition: box-shadow 200ms ease, transform 200ms ease;
 }
@@ -34,11 +115,6 @@ body {
 }
 
 @media (max-width: 576px) {
-  .container {
-    padding: 15px;
-  }
-
-  .card {
-    padding: 10px;
-  }
+  .login-card { padding: 1.25rem; margin: 0 1rem; }
+  .login-icon { width: 48px; height: 48px; font-size: 20px; }
 }
