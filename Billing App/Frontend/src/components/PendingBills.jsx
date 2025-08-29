@@ -329,11 +329,11 @@ function PendingBills() {
                       <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(bill._id)} disabled={loading}>Delete</button>
                     </div>
                     {/* Mobile actions dropdown */}
-                    <div className="dropdown d-inline-block d-md-none">
-                      <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div className="dropdown d-inline-block d-md-none position-static w-100">
+                      <button className="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                         Actions
                       </button>
-                      <ul className="dropdown-menu dropdown-menu-end">
+                      <ul className="dropdown-menu dropdown-menu-end w-100 mt-1">
                         {bill.status !== 'paid' && (
                           <li><button className="dropdown-item" onClick={() => handleMarkPaid(bill._id)} disabled={loading}>Mark Paid</button></li>
                         )}

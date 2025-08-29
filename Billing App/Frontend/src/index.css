@@ -119,6 +119,12 @@ body {
   .login-icon { width: 48px; height: 48px; font-size: 20px; }
 }
 
+/* Ensure dropdowns inside responsive tables aren't clipped on mobile */
+@media (max-width: 767.98px) {
+  .table-responsive { overflow: visible; }
+  .table-responsive .dropdown-menu { position: absolute; }
+}
+
 /* Sidebar layout */
 .sidebar {
   width: 240px;
