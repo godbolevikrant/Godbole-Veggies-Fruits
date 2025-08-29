@@ -2,7 +2,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 import { FaSignOutAlt } from 'react-icons/fa';
-import Logo from '../assets/NewLogo.png'; 
 
 function Navbar() {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -17,10 +16,9 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-danger sticky-top shadow-sm">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-success sticky-top shadow-sm">
       <div className="container">
         <NavLink className="navbar-brand d-flex align-items-center gap-2" to="/">
-          <img src={Logo} alt="Godbole Logo" height="28" style={{ borderRadius: 6 }} />
           <span className="fw-semibold">Godbole Veggies & Fruits</span>
         </NavLink>
         {isAuthenticated && (
