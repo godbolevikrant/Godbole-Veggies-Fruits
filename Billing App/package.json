@@ -1,0 +1,17 @@
+{
+  "name": "godbole-veggies-fruits",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "start": "npm run start --workspace backend",
+    "build": "npm run build --workspace frontend",
+    "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
