@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*'}));
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN}));
 // Basic security headers and allow credentials if single origin configured
 if (process.env.FRONTEND_ORIGIN) {
   app.use((req, res, next) => {
