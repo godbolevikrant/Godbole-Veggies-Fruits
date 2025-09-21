@@ -3,6 +3,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { connectDB } = require('./config/dbConfig');
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN}));
@@ -16,18 +17,9 @@ if (process.env.FRONTEND_ORIGIN) {
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/billing-app', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
+connectDB();
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
-});
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
 });
 
 // Basic route
